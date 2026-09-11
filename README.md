@@ -13,4 +13,4 @@ pip install pycopier
 
 ## Quick Start
 
-See [Quick Start Documentation](https://github.com/MetaRPC/PyCopier/tree/main/docsAll_Guides/Your_First_Project/) for a 10-minute walkthrough.
+See [Quick Start Documentation](https://github.com/MetaRPC/PyCopier/blob/main/docs/All_Guides/Your_First_Project.md) for a 10-minute walkthrough.
