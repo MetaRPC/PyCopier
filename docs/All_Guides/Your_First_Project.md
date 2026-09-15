@@ -30,13 +30,12 @@ async def main():
     print(f"Master login: {master.login}, Slave login: {slave.login}")
 
     # 2. Connect to Trade Copier gRPC Service
-    copier = CopierService("copy.mrpc.pro:443", user_key="YOUR_USER_KEY", manager_key="YOUR_MANAGER_KEY")
+    copier = CopierService("copy.mrpc.pro:443", user_key="YOUR_USER_KEY")
 
     # 3. Start Copier
     req = StartRequest(
         user_key="YOUR_USER_KEY",
-        manager_key="YOUR_MANAGER_KEY",
-        master=Account(type="MT5", user=master.login, password=master.password, server=master.server),
+            master=Account(type="MT5", user=master.login, password=master.password, server=master.server),
         slave=Account(type="MT5", user=slave.login, password=slave.password, server=slave.server),
         risk_type="LotMultiplier",
         risk_value="1.5",
