@@ -11,7 +11,6 @@ class CopierAccount:
     def get_metadata(self):
         return (
             ("authorization", f"Bearer {self.user_key}"),
-            ("x-metarpc-manager", self.manager_key),
             ("x-metarpc-client-sdk", "PyCopier/1.0.0")
         )
 
