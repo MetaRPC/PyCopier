@@ -21,14 +21,16 @@ class CopierService:
                 user=request.master.user,
                 password=request.master.password,
                 server=request.master.server,
-                name=request.master.name
+                name=request.master.name,
+                id=request.master.id
             ),
             slave=pb.Account(
                 type=request.slave.type,
                 user=request.slave.user,
                 password=request.slave.password,
                 server=request.slave.server,
-                name=request.slave.name
+                name=request.slave.name,
+                id=request.slave.id
             ),
             risk_type=request.risk_type,
             risk_value=request.risk_value,
@@ -39,7 +41,7 @@ class CopierService:
             reverse_copy=request.reverse_copy
         )
         try:
-            res = await self.stub.Start(req, metadata=self.account.get_metadata(), timeout=15)
+            res = await self.stub.Start(req, metadata=self.account.get_metadata(), timeout=180)
             return StartReply(ok=res.ok, copier_id=res.copier_id, error=res.error)
         except grpc.RpcError as e:
             return StartReply(ok=False, copier_id="", error=e.details() if hasattr(e, "details") else str(e))

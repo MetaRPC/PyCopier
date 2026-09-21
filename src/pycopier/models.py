@@ -8,6 +8,7 @@ class Account:
     password: str = ""
     server: str = ""
     name: str = ""
+    id: str = ""
 
 @dataclass
 class StartRequest:

@@ -3,10 +3,7 @@
 import grpc
 import warnings
 
-try:
-    from . import copier_pb2 as copier__pb2
-except ImportError:
-    import copier_pb2 as copier__pb2
+from . import copier_pb2 as copier__pb2
 
 GRPC_GENERATED_VERSION = '1.83.0'
 GRPC_VERSION = grpc.__version__
@@ -31,9 +28,15 @@ if _version_not_supported:
 class CopierServiceStub:
     """Trade copier operations over gRPC.
 
-    Credentials (passwords) are strictly carried in the request body over HTTP/2 gRPC,
-    preventing plain-text credential leakage in HTTP query parameters, server access logs,
-    or proxy routing histories.
+    This exists for one reason: the REST equivalents take the master's and slave's MT account
+    PASSWORDS as query parameters. A query string is written to the ingress log, to any proxy in
+    between, and to the browser's history — so every copier ever started has put two sets of live
+    trading credentials into plain-text logs. gRPC carries them in the request body over HTTP/2,
+    where nothing on the path records them.
+
+    The REST endpoints are untouched and still serve copyfront. This is an additional transport for
+    the same operations, not a replacement, and it delegates to exactly the same implementation so
+    the two cannot drift.
     """
 
     def __init__(self, channel):
@@ -67,34 +70,40 @@ class CopierServiceStub:
 class CopierServiceServicer:
     """Trade copier operations over gRPC.
 
-    Credentials (passwords) are strictly carried in the request body over HTTP/2 gRPC,
-    preventing plain-text credential leakage in HTTP query parameters, server access logs,
-    or proxy routing histories.
+    This exists for one reason: the REST equivalents take the master's and slave's MT account
+    PASSWORDS as query parameters. A query string is written to the ingress log, to any proxy in
+    between, and to the browser's history — so every copier ever started has put two sets of live
+    trading credentials into plain-text logs. gRPC carries them in the request body over HTTP/2,
+    where nothing on the path records them.
+
+    The REST endpoints are untouched and still serve copyfront. This is an additional transport for
+    the same operations, not a replacement, and it delegates to exactly the same implementation so
+    the two cannot drift.
     """
 
     def Start(self, request, context):
-        """Start a trade copier between master and slave accounts.
+        """Start a copier. The only call that carries credentials.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def List(self, request, context):
-        """List all active and paused copiers belonging to a user.
+        """Every copier belonging to a user. Never returns stored passwords — see CopierSummary.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def Pause(self, request, context):
-        """Pause or resume an existing copier without deleting configuration.
+        """Pause or resume.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def Remove(self, request, context):
-        """Remove a copier and unregister trade hooks.
+        """Remove a copier.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -134,9 +143,15 @@ def add_CopierServiceServicer_to_server(servicer, server):
 class CopierService:
     """Trade copier operations over gRPC.
 
-    Credentials (passwords) are strictly carried in the request body over HTTP/2 gRPC,
-    preventing plain-text credential leakage in HTTP query parameters, server access logs,
-    or proxy routing histories.
+    This exists for one reason: the REST equivalents take the master's and slave's MT account
+    PASSWORDS as query parameters. A query string is written to the ingress log, to any proxy in
+    between, and to the browser's history — so every copier ever started has put two sets of live
+    trading credentials into plain-text logs. gRPC carries them in the request body over HTTP/2,
+    where nothing on the path records them.
+
+    The REST endpoints are untouched and still serve copyfront. This is an additional transport for
+    the same operations, not a replacement, and it delegates to exactly the same implementation so
+    the two cannot drift.
     """
 
     @staticmethod
@@ -237,82 +252,6 @@ class CopierService:
             '/copier.CopierService/Remove',
             copier__pb2.RemoveRequest.SerializeToString,
             copier__pb2.SimpleReply.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-
-class DemoAccountStub:
-    """Demo account creation service definition
-    """
-
-    def __init__(self, channel):
-        """Constructor.
-
-        Args:
-            channel: A grpc.Channel.
-        """
-        self.OpenDemoAccount = channel.unary_unary(
-                '/copier.DemoAccount/OpenDemoAccount',
-                request_serializer=copier__pb2.GuiDemoOpenAccountRequest.SerializeToString,
-                response_deserializer=copier__pb2.GuiDemoOpenAccountReply.FromString,
-                _registered_method=True)
-
-
-class DemoAccountServicer:
-    """Demo account creation service definition
-    """
-
-    def OpenDemoAccount(self, request, context):
-        """Provision a new MetaTrader demo account on the fly.
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-
-def add_DemoAccountServicer_to_server(servicer, server):
-    rpc_method_handlers = {
-            'OpenDemoAccount': grpc.unary_unary_rpc_method_handler(
-                    servicer.OpenDemoAccount,
-                    request_deserializer=copier__pb2.GuiDemoOpenAccountRequest.FromString,
-                    response_serializer=copier__pb2.GuiDemoOpenAccountReply.SerializeToString,
-            ),
-    }
-    generic_handler = grpc.method_handlers_generic_handler(
-            'copier.DemoAccount', rpc_method_handlers)
-    server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('copier.DemoAccount', rpc_method_handlers)
-
-
- # This class is part of an EXPERIMENTAL API.
-class DemoAccount:
-    """Demo account creation service definition
-    """
-
-    @staticmethod
-    def OpenDemoAccount(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/copier.DemoAccount/OpenDemoAccount',
-            copier__pb2.GuiDemoOpenAccountRequest.SerializeToString,
-            copier__pb2.GuiDemoOpenAccountReply.FromString,
             options,
             channel_credentials,
             insecure,

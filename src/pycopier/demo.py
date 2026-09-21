@@ -67,3 +67,65 @@ class DemoAccountClient:
                     lifetime_seconds=disc.get("fullLifeTimeSeconds", 0)
                 )
         return await asyncio.to_thread(_call)
+
+    async def order_send(self, terminal_id: str, symbol: str = "EURUSD", operation: str = "TMT5_ORDER_TYPE_BUY", volume: float = 0.01, api_key: str = "TRIAL") -> int:
+        def _call():
+            params = urllib.parse.urlencode({
+                "id": terminal_id,
+                "symbol": symbol,
+                "operation": operation,
+                "volume": f"{volume:.2f}",
+                "stoploss": 0,
+                "takeprofit": 0,
+                "comment": "PyCopier_Test"
+            })
+            url = f"{self.endpoint}/OrderSend?{params}"
+            req = urllib.request.Request(url, headers={"APIKey": api_key, "id": terminal_id, "User-Agent": "PyCopier/1.0"})
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                data = json.loads(resp.read().decode())
+                if isinstance(data, dict):
+                    inner = data.get("data", {})
+                    if isinstance(inner, dict):
+                        return int(inner.get("order") or inner.get("ticket") or 0)
+                    return int(data.get("order") or data.get("ticket") or 0)
+                return int(data)
+        return await asyncio.to_thread(_call)
+
+    async def opened_orders(self, terminal_id: str, api_key: str = "TRIAL") -> list:
+        def _call():
+            url = f"{self.endpoint}/OpenedOrders?id={terminal_id}"
+            req = urllib.request.Request(url, headers={"APIKey": api_key, "id": terminal_id, "User-Agent": "PyCopier/1.0"})
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                data = json.loads(resp.read().decode())
+                if isinstance(data, list):
+                    return data
+                elif isinstance(data, dict):
+                    inner = data.get("data", {})
+                    if isinstance(inner, dict):
+                        return inner.get("positionInfos", []) or inner.get("positions", []) or []
+                    elif isinstance(inner, list):
+                        return inner
+                    return data.get("positionInfos", []) or []
+                return []
+        return await asyncio.to_thread(_call)
+
+    async def order_close(self, terminal_id: str, ticket: int, api_key: str = "TRIAL") -> str:
+        def _call():
+            params = urllib.parse.urlencode({
+                "id": terminal_id,
+                "ticket": ticket,
+                "volume": 0,
+                "slippage": 20
+            })
+            url = f"{self.endpoint}/OrderClose?{params}"
+            req = urllib.request.Request(url, headers={"APIKey": api_key, "id": terminal_id, "User-Agent": "PyCopier/1.0"})
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                return resp.read().decode()
+        return await asyncio.to_thread(_call)
+
+def to_hyphen_guid(guid: str) -> str:
+    clean = guid.replace("mt5_live_", "").replace("-", "")
+    if len(clean) == 32:
+        return f"{clean[0:8]}-{clean[8:12]}-{clean[12:16]}-{clean[16:20]}-{clean[20:32]}"
+    return guid
+
