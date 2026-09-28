@@ -10,7 +10,7 @@ from pycopier.demo import to_hyphen_guid
 
 async def main():
     print("=== MetaRPC PyCopier Trade Replication Quick Start ===")
-    api_key = "TRIAL"
+    api_key = sys.argv[1] if len(sys.argv) > 1 else os.getenv("MRPC_API_KEY", "TRIAL")
     demo = DemoAccountClient("https://mt5.mrpc.pro")
     copier = CopierService("copy.mrpc.pro:443", user_key=api_key)
 
