@@ -152,10 +152,10 @@ async def main():
         # 9. Cleanly Disconnect Terminal Sessions
         print("\n[9] Disconnecting terminal sessions cleanly via /Disconnect...")
         if master_guid:
-            disc_m = await demo.disconnect(master_guid, api_key=api_key)
+            disc_m = await demo.disconnect(master_guid, api_key=api_key, delete=True)
             print(f"    Master Terminal Cleanly Disconnected: {disc_m.unique_identifier} (Lifetime: {disc_m.lifetime_seconds}s)")
         if slave_guid:
-            disc_s = await demo.disconnect(slave_guid, api_key=api_key)
+            disc_s = await demo.disconnect(slave_guid, api_key=api_key, delete=True)
             print(f"    Slave Terminal Cleanly Disconnected:  {disc_s.unique_identifier} (Lifetime: {disc_s.lifetime_seconds}s)")
 
         await copier.close()

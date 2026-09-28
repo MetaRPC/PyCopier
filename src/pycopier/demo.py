@@ -55,10 +55,20 @@ class DemoAccountClient:
                 return ConnectExReply(terminal_instance_guid=term_id, terminal_type="MT5")
         return await asyncio.to_thread(_call)
 
-    async def disconnect(self, terminal_id: str, api_key: str = "TRIAL") -> DisconnectReply:
+    async def disconnect(self, terminal_id: str, api_key: str = "TRIAL", delete: bool = False) -> DisconnectReply:
         def _call():
             url = f"{self.endpoint}/Disconnect"
-            req = urllib.request.Request(url, headers={"APIKey": api_key, "id": terminal_id, "User-Agent": "PyCopier/1.0"})
+            if delete:
+                url += "?delete=true"
+            req = urllib.request.Request(
+                url,
+                headers={
+                    "APIKey": api_key,
+                    "id": terminal_id,
+                    "delete": "true" if delete else "false",
+                    "User-Agent": "PyCopier/1.0"
+                }
+            )
             with urllib.request.urlopen(req, timeout=60) as resp:
                 data = json.loads(resp.read().decode())
                 disc = data.get("data", {})
