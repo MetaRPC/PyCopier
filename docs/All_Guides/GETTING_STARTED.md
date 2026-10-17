@@ -4,10 +4,10 @@ Welcome to **PyCopier**, the official Python client library for MetaRPC's ultra-
 
 ## Installation
 
-Install PyCopier using your language's package manager:
+PyCopier is not published on PyPI; install it as follows:
 
 ```bash
-pip install pycopier
+pip install git+https://github.com/MetaRPC/PyCopier.git
 ```
 
 ## Infrastructure Endpoints

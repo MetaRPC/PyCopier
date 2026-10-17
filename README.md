@@ -27,7 +27,7 @@
 ## 📦 Installation
 
 ```bash
-pip install pycopier
+pip install git+https://github.com/MetaRPC/PyCopier.git
 ```
 
 ---
@@ -39,7 +39,7 @@ Clone the repository and run the trade copier example out-of-the-box:
 ```bash
 git clone https://github.com/MetaRPC/PyCopier.git
 cd PyCopier/examples
-pip install pycopier
+pip install git+https://github.com/MetaRPC/PyCopier.git
 
 # 1. Run with default TRIAL key:
 python quickstart.py
