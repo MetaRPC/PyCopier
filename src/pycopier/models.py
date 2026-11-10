@@ -64,4 +64,5 @@ class TradeLog:
     master_ticket: int = 0
     slave_ticket: int = 0
     profit: float = 0.0
-    success: bool = True
+    success: bool = False
+    raw: dict = field(default_factory=dict)

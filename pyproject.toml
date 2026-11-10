@@ -8,9 +8,9 @@ version = "1.0.0"
 authors = [{ name = "MetaRPC", email = "support@mrpc.pro" }]
 description = "Official Python SDK for MetaRPC Trade Copier high-performance trade replication via gRPC"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
-    "grpcio>=1.60.0",
-    "protobuf>=4.25.0",
-    "websockets>=12.0"
+    "grpcio>=1.83.0",
+    "protobuf>=7.35.1",
+    "websockets>=14.0"
 ]

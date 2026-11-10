@@ -87,16 +87,28 @@ class CopierService:
             return SimpleReply(ok=False, error=e.details() if hasattr(e, "details") else str(e))
 
     async def stream_trade_logs(self, copier_id: str) -> AsyncGenerator[TradeLog, None]:
-        yield TradeLog(
-            id=str(uuid.uuid4()),
-            copier_id=copier_id,
-            symbol="EURUSD",
-            update_type="MarketOpen",
-            master_ticket=1001,
-            slave_ticket=2001,
-            profit=0.0,
-            success=True
-        )
+        # Only real server messages are yielded. Transport/authentication errors propagate.
+        import json
+        from urllib.parse import quote
+        from websockets.asyncio.client import connect
+        uri = f"wss://{self.account.endpoint}/OnTradeLog?id={quote(copier_id, safe='')}"
+        async with connect(uri, additional_headers=dict(self.account.get_metadata()),
+                           open_timeout=10, max_size=4 * 1024 * 1024) as ws:
+            async for message in ws:
+                data = json.loads(message)
+                if not isinstance(data, dict):
+                    raise ValueError("Expected a trade-log object")
+                lower = {k.lower(): v for k, v in data.items()}
+                master = {k.lower(): v for k, v in (lower.get("masterorder") or {}).items()}
+                slave = {k.lower(): v for k, v in (lower.get("slaveorder") or {}).items()}
+                yield TradeLog(
+                    id=lower.get("id", ""), copier_id=lower.get("copierid", ""),
+                    symbol=lower.get("slavesymbol", lower.get("symbol", "")),
+                    update_type=str(lower.get("updatetype", "")),
+                    master_ticket=int(lower.get("masterticket", master.get("ticket", 0)) or 0),
+                    slave_ticket=int(lower.get("slaveticket", slave.get("ticket", 0)) or 0),
+                    profit=float(lower.get("profit", slave.get("profit", 0)) or 0),
+                    success=lower.get("success", False), raw=data)
 
     async def close(self):
         await self.account.close()

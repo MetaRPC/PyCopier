@@ -30,7 +30,7 @@ async def main():
         await asyncio.sleep(1)
 
         # 2. Connect terminals via ConnectEx
-        print(f"\n[2] Connecting terminals via ConnectEx (APIKey: {api_key})...")
+        print(f"\n[2] Connecting terminals via ConnectEx (authenticated)...")
         for attempt in range(1, 4):
             try:
                 conn_m = await demo.connect_ex(user=master.login, password=master.password, server=master.server, api_key=api_key)
