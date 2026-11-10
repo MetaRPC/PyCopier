@@ -24,7 +24,7 @@ Set `MRPC_API_KEY` to your real owner API key in your environment, then run:
 python examples/list.py
 ```
 
-This List example is read-only: no account creation or trades. Java on Windows uses `;` instead of `:` in classpaths.
+This List example is read-only: no account creation or trades. Activate the virtual environment before installing or running examples.
 
 ## Authentication
 

@@ -9,8 +9,10 @@ from pycopier import CopierService, DemoAccountClient, Account, StartRequest
 from pycopier.demo import to_hyphen_guid
 
 async def main():
+    if os.getenv("MRPC_LIVE_TESTS") != "1":
+        raise RuntimeError("Set MRPC_LIVE_TESTS=1 explicitly to run demo trading.")
     print("=== MetaRPC PyCopier Trade Replication Quick Start ===")
-    api_key = sys.argv[1] if len(sys.argv) > 1 else os.getenv("MRPC_API_KEY", "TRIAL")
+    api_key = sys.argv[1] if len(sys.argv) > 1 else os.getenv("MRPC_API_KEY", "")
     demo = DemoAccountClient("https://mt5.mrpc.pro")
     copier = CopierService("copy.mrpc.pro:443", user_key=api_key)
 

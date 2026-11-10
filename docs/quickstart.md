@@ -14,7 +14,7 @@ python -m venv .venv
 python -m pip install -e .
 ```
 
-Java on Windows uses `;` for classpath separators. Run C++ builds in a Visual Studio developer shell. Activate your Python virtual environment before installing.
+Activate the virtual environment before installing or running examples.
 
 ## 2. Set your owner key
 
