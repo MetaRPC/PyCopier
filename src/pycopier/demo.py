@@ -4,6 +4,15 @@ import json
 import asyncio
 from dataclasses import dataclass
 
+def _read_json(response):
+    """MRPC can return an error envelope with HTTP 200; never treat it as empty data."""
+    data = json.loads(response.read().decode())
+    if isinstance(data, dict) and data.get('error'):
+        error = data['error']
+        code = error.get('errorCode', 'API_ERROR') if isinstance(error, dict) else 'API_ERROR'
+        raise RuntimeError(f'MRPC request failed: {code}')
+    return data
+
 @dataclass
 class DemoAccountReply:
     result_code: int = 0
@@ -34,7 +43,7 @@ class DemoAccountClient:
             url = f"{self.endpoint}/DemoAccount/Open?server={urllib.parse.quote(server)}"
             req = urllib.request.Request(url, headers={"APIKey": api_key, "User-Agent": "PyCopier/1.0"})
             with urllib.request.urlopen(req, timeout=30) as resp:
-                data = json.loads(resp.read().decode())
+                data = _read_json(resp)
                 return DemoAccountReply(
                     result_code=data.get("resultCode", 0),
                     login=int(data.get("login", 0)),
@@ -50,7 +59,7 @@ class DemoAccountClient:
             url = f"{self.endpoint}/ConnectEx?{params}"
             req = urllib.request.Request(url, headers={"APIKey": api_key, "User-Agent": "PyCopier/1.0"})
             with urllib.request.urlopen(req, timeout=120) as resp:
-                data = json.loads(resp.read().decode())
+                data = _read_json(resp)
                 term_id = data.get("data", {}).get("terminalInstanceGuid", "")
                 return ConnectExReply(terminal_instance_guid=term_id, terminal_type="MT5")
         return await asyncio.to_thread(_call)
@@ -70,7 +79,7 @@ class DemoAccountClient:
                 }
             )
             with urllib.request.urlopen(req, timeout=60) as resp:
-                data = json.loads(resp.read().decode())
+                data = _read_json(resp)
                 disc = data.get("data", {})
                 return DisconnectReply(
                     unique_identifier=disc.get("uniqueIdentifier", ""),
@@ -92,7 +101,7 @@ class DemoAccountClient:
             url = f"{self.endpoint}/OrderSend?{params}"
             req = urllib.request.Request(url, headers={"APIKey": api_key, "id": terminal_id, "User-Agent": "PyCopier/1.0"})
             with urllib.request.urlopen(req, timeout=30) as resp:
-                data = json.loads(resp.read().decode())
+                data = _read_json(resp)
                 if isinstance(data, dict):
                     inner = data.get("data", {})
                     if isinstance(inner, dict):
@@ -106,7 +115,7 @@ class DemoAccountClient:
             url = f"{self.endpoint}/OpenedOrders?id={terminal_id}"
             req = urllib.request.Request(url, headers={"APIKey": api_key, "id": terminal_id, "User-Agent": "PyCopier/1.0"})
             with urllib.request.urlopen(req, timeout=30) as resp:
-                data = json.loads(resp.read().decode())
+                data = _read_json(resp)
                 if isinstance(data, list):
                     return data
                 elif isinstance(data, dict):
@@ -130,7 +139,7 @@ class DemoAccountClient:
             url = f"{self.endpoint}/OrderClose?{params}"
             req = urllib.request.Request(url, headers={"APIKey": api_key, "id": terminal_id, "User-Agent": "PyCopier/1.0"})
             with urllib.request.urlopen(req, timeout=30) as resp:
-                return resp.read().decode()
+                return json.dumps(_read_json(resp))
         return await asyncio.to_thread(_call)
 
 def to_hyphen_guid(guid: str) -> str:
