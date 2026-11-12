@@ -32,6 +32,14 @@ Every SDK call sends `ApiKey` (`apikey` in gRPC metadata). The gRPC body also ca
 
 ## Demo workflow and troubleshooting
 
+### Check sizing offline first
+
+```bash
+python examples/sizing_preview.py --mode LotMultiplier --master-lots 0.10 --risk-value 0.5
+```
+
+This standalone worksheet needs only Python's standard library and makes no network requests. It reports **0.05 requested lots** for the example, before broker rounding and limits. It supports all five documented sizing modes and reports minimum/maximum/step mismatches without silently raising the trade size. Use your actual contracts and volume rules, and matching deposit currencies for balance/equity comparisons. See [the worked examples](https://metarpc.github.io/PyCopier/sizing/).
+
 Start with the read-only example above, then use disposable demo accounts for a copying test. The [lifecycle recipes](https://metarpc.github.io/PyCopier/recipes/) show the SDK workflow; [position sizing](https://metarpc.github.io/PyCopier/sizing/) explains the settings, and [troubleshooting](https://metarpc.github.io/PyCopier/troubleshooting/) covers rejected trades and uncertain outcomes.
 
 - [Watch the recorded copier troubleshooting walkthrough](https://mrpc.pro/tutorials/console/copier-troubleshooting?utm_source=github&utm_medium=referral&utm_campaign=sdk_guides_nov12&utm_content=pycopier) — a real demo rejection, corrected volume, and verified opening/closing. This video uses the control panel; use this SDK's recipes for code.
