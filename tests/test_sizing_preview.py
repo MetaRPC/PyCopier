@@ -30,7 +30,13 @@ class SizingPreviewTests(unittest.TestCase):
         self.assertEqual(sizing.preview("LotMultiplier", ".1", ".3")["volume_issues"], [])
 
     def test_invalid_values_and_limits_are_rejected(self):
-        for invalid in ("0", "-1", "NaN", "Infinity", "abc", "100000001"):
+        for invalid in ("0", "-1", "NaN", "Infinity", "abc", "100000001", "1e-100"):
             with self.assertRaises(ValueError): sizing.preview("BalanceMultiplier", ".1", "1", master_funds=invalid)
         with self.assertRaises(ValueError): sizing.preview("FixedLot", ".1", "1", minimum="2", maximum="1")
         with self.assertRaises(ValueError): sizing.preview("Unknown", ".1", "1")
+
+    def test_extreme_ratios_report_limits_without_decimal_failure(self):
+        result = sizing.preview("BalanceMultiplier", "1e8", "1e8", master_funds="1e-8",
+                                follower_funds="1e8", master_contract="1e8", follower_contract="1e-8",
+                                step="1e-8")
+        self.assertIn("above maximum", result["volume_issues"])

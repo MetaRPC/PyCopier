@@ -4,7 +4,7 @@ This calculates requested lots, not the server's final broker-adjusted volume.
 Use matching deposit currencies: raw fund ratios do not convert currencies.
 """
 import argparse
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, localcontext
 import json
 
 MODES = ("FixedLot", "LotMultiplier", "BalanceMultiplier", "EquityMultiplier", "FixedBalanceMultiplier")
@@ -15,8 +15,8 @@ def positive(value):
         result = Decimal(str(value))
     except InvalidOperation as exc:
         raise ValueError("Use positive finite decimal values") from exc
-    if not result.is_finite() or not 0 < result <= Decimal("100000000"):
-        raise ValueError("Use positive finite values no greater than 100000000")
+    if not result.is_finite() or not Decimal("0.00000001") <= result <= Decimal("100000000"):
+        raise ValueError("Use finite values between 0.00000001 and 100000000")
     return result
 
 
@@ -30,19 +30,21 @@ def preview(mode, master_lots, risk_value, master_funds="10000", follower_funds=
                    master_contract, follower_contract, minimum, maximum, step))
     if low > high:
         raise ValueError("Minimum volume cannot exceed maximum")
-    ratio = source_contract / target_contract
-    if mode == "FixedLot":
-        requested = value
-    elif mode == "LotMultiplier":
-        requested = lots * value * (ratio if align_contracts else Decimal(1))
-    else:
-        # master_funds means balance, equity, or the fixed master balance,
-        # depending on the selected mode; follower_funds is the matching value.
-        requested = lots * follower / master * value * ratio
-    problems = []
-    if requested < low: problems.append("below minimum")
-    if requested > high: problems.append("above maximum")
-    if requested % increment != 0: problems.append("not an exact volume-step multiple")
+    with localcontext() as context:
+        # Bound precision without changing the caller's decimal context.
+        context.prec = 80
+        ratio = source_contract / target_contract
+        if mode == "FixedLot":
+            requested = value
+        elif mode == "LotMultiplier":
+            requested = lots * value * (ratio if align_contracts else Decimal(1))
+        else:
+            # master_funds is balance, equity, or the fixed master balance.
+            requested = lots * follower / master * value * ratio
+        problems = []
+        if requested < low: problems.append("below minimum")
+        if requested > high: problems.append("above maximum")
+        if requested % increment != 0: problems.append("not an exact volume-step multiple")
     return {"risk_type": mode, "risk_value": str(value), "requested_lots": format(requested, "f"),
             "volume_issues": problems,
             "note": "No broker rounding applied. Check actual logs, margin, contract and broker rules."}
